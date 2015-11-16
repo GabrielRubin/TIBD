@@ -56,8 +56,6 @@ class DataBlock:
 
         hexData   = bytes()
 
-
-
         for i in range(0, len(self.data)):
 
             itemSize  = len(self.data[i])

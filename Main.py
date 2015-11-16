@@ -2,30 +2,26 @@ __author__ = 'Gabriel'
 
 import sys
 import json
-from tkinter.filedialog import askopenfilenames
 from Buffer import WriteOnDataBlock
 import DataIO
 
 FreeDataBlockIndex = 0
 
-def LoadAndWriteJSON(targetDataBlockAddress: int) -> None:
+def LoadAndWriteJSON(filenames, targetDataBlock = 0) -> None:
 
-    filenames = askopenfilenames()
+    for filename in filenames:
 
-    print(filenames)
+        with open(filename, "rb") as f:
 
-    '''
-    with open(filename, "rb") as f:
+            dataRaw = f.read()
 
-        dataRaw = f.read()
+            WriteOnDataBlock(targetDataBlock, dataRaw)
 
-        WriteOnDataBlock(targetDataBlockAddress, dataRaw)
+    pass
 
-        #dataStr = dataRaw.decode()
-        #print(dataStr)
+def PrintDatablockInfo(address : int):
 
-        #data
-    '''
+    DataIO.LoadDataBlock(address, True)
 
     pass
 
