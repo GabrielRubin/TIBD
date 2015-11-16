@@ -16,29 +16,35 @@ class DataBlock:
 
         numberOfData = int.from_bytes(rawData[2:3], byteorder=sys.byteorder)
 
-        dataOffset   = 4 + (3 * numberOfData)
+        dataOffset   = 3 + (2 * numberOfData)
+
+        currentOffset = 0
 
         for i in range(0, numberOfData):
 
-            itemInfo  = rawData[3 * (i+1) : (3 * (i+1)) + 3]
+            itemInfo  = rawData[3 + (2*i) : (3 + (2*i)) + 2]
 
             dataBin   = bin(int.from_bytes(itemInfo, byteorder='little'))
 
-            dataBin   = dataBin[0:2] + dataBin[2:].zfill(24)
+            dataBin   = dataBin[0:2] + dataBin[2:].zfill(16)
 
-            itemIndex = int(dataBin[0:14], 2)
+            itemSize  = int(dataBin[0:14],  2)
 
-            print("ItemIndex: {0}".format(itemIndex))
+            self.isDivided = bool(int(dataBin[14:18], 2))
 
-            itemSize  = int(dataBin[14:26], 2)
+            print(self.isDivided)
 
             print("ItemSize: {0}".format(itemSize))
 
-            jsonFile  = rawData[dataOffset + itemIndex - 1 : dataOffset + itemIndex + itemSize - 1]
+            jsonFile  = rawData[dataOffset + currentOffset : dataOffset + currentOffset + itemSize]
 
             print(jsonFile)
 
             self.data.append(jsonFile)
+
+            currentOffset += itemSize
+
+        pass
 
     def ToBytes(self):
 
@@ -46,36 +52,38 @@ class DataBlock:
 
         numberOfData = len(self.data).to_bytes(1, byteorder=sys.byteorder)
 
-        nextIndex = 0
-
         hexTable  = bytes()
 
         hexData   = bytes()
 
-        for i in range(0, len(self.data)):
 
-            itemIndex = nextIndex
+
+        for i in range(0, len(self.data)):
 
             itemSize  = len(self.data[i])
 
-            nextIndex += itemSize
+            binItemSize  = bin(itemSize)[0:2] + bin(itemSize)[2:].zfill(12)
 
-            binItemIndex = bin(itemIndex)[0:2] + bin(itemIndex)[2:].zfill(12)
-            binItemSize  = bin(itemSize)[0:2]  + bin(itemSize)[2:].zfill(12)
+            print(binItemSize)
 
-            hexTableEntry = int('0b' + binItemSize[6:14], 2).to_bytes(1, byteorder=sys.byteorder) + \
-                            int('0b' + binItemIndex[10:14] + binItemSize[2:6], 2).to_bytes(1, byteorder=sys.byteorder) + \
-                            int(binItemIndex[0:10], 2).to_bytes(1, byteorder=sys.byteorder)
+            isDivided = False #temp
+
+            isItemBin = bin(isDivided)[2:].zfill(4)
+
+            hexTableEntry = int('0b' + binItemSize[10:14] + isItemBin, 2).to_bytes(1, byteorder=sys.byteorder) + \
+                            int(binItemSize[0:10], 2).to_bytes(1, byteorder=sys.byteorder)
+
+            print(hexTableEntry)
 
             hexTable += hexTableEntry
 
             hexData  += self.data[i]
 
-            totaldata = blockAddress + numberOfData + hexTable + hexData
+        totaldata = blockAddress + numberOfData + hexTable + hexData
 
-            byteChunk = ""
+        byteChunk = ""
 
-            for i in range(len(totaldata), self.DATABLOCK_MAX_SIZE+1):
-                byteChunk += "x"
+        for i in range(len(totaldata), self.DATABLOCK_MAX_SIZE+1):
+            byteChunk += "x"
 
         return totaldata + byteChunk.encode('utf-8')[1:]

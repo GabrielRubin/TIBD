@@ -9,16 +9,18 @@ def LoadAndWriteJSON(targetDataBlockAddress: int) -> None:
 
     filename = askopenfilename()
 
-    with open(filename, "rb") as f:
+    for file in filename:
 
-        dataRaw = f.read()
+        with open(file, "rb") as f:
 
-        WriteOnDataBlock(targetDataBlockAddress, dataRaw)
+            dataRaw = f.read()
 
-        #dataStr = dataRaw.decode()
-        #print(dataStr)
+            WriteOnDataBlock(targetDataBlockAddress, dataRaw)
 
-        #data
+            #dataStr = dataRaw.decode()
+            #print(dataStr)
+
+            #data
 
     pass
 
@@ -69,3 +71,42 @@ data3 = int('0b' + dataSize3[6:14], 2).to_bytes(1, byteorder=sys.byteorder) + \
 '''
 
 LoadAndWriteJSON(0)
+
+'''
+
+itemSize  = 876
+
+binItemSize  = bin(itemSize)[0:2]  + bin(itemSize)[2:].zfill(12);
+
+isDivided = True
+
+isItemBin = bin(isDivided)[2:].zfill(4)
+
+print(isItemBin)
+
+hexTableEntry = int('0b' + binItemSize[10:14] + isItemBin, 2).to_bytes(1, byteorder=sys.byteorder) + \
+                int(binItemSize[0:10], 2).to_bytes(1, byteorder=sys.byteorder)
+
+print(hexTableEntry)
+
+dataBin   = bin(int.from_bytes(hexTableEntry, byteorder='little'))
+
+dataBin   = dataBin[0:2] + dataBin[2:].zfill(16)
+
+itemSizeBin = int(dataBin[0:14], 2)
+
+divide   = int(dataBin[14:18], 2)
+
+print(itemSizeBin)
+
+print("ItemIndex: {0}".format(itemSizeBin))
+
+'''
+
+#itemSize  = int(dataBin[14:26], 2)
+
+#hexTable += hexTableEntry
+
+#hexData  += self.data[i]
+
+#totaldata = blockAddress + numberOfData + hexTable + hexData

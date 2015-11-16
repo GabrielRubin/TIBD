@@ -6,31 +6,6 @@ import sys
 DATABLOCK_MAX_SIZE      = 4096
 DATAFILE_MAX_DATABLOCKS = 65536
 
-'''
-from ListaDeCompras import Produto
-from ListaDeCompras import ListaDeCompras
-
-produto0   = Produto(0, "Leite", 5.50)
-produto1   = Produto(1, "Ovomaltino", 10.0)
-produto2   = Produto(2, "Pera", 3.0)
-
-produtos = [produto0, produto1, produto2]
-
-listaJuvenil = ListaDeCompras(produtos, "Garotinho Juvenil")
-
-jsonObj = json.dumps(listaJuvenil.ToJason(), indent=3, sort_keys=True)
-
-s = bytes(jsonObj, 'utf-8')
-
-print(s)
-
-with open("testData", "wb") as f:
-    f.write(s)
-
-with open("testData", "rb") as f:
-    print(f.read().decode('utf-8'))
-'''
-
 def LoadDataBlock(dataBlockAddress: int, debug = False) -> int:
 
     """

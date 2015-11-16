@@ -52,4 +52,4 @@ def DiscardFrame() -> None:
 
     pass
 
-LoadDataToBuffer(0)
+#LoadDataToBuffer(0)
