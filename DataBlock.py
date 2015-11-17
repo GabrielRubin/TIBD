@@ -2,9 +2,11 @@ __author__ = 'Gabriel'
 
 import sys
 
+from Data import Data
+
 class DataBlock:
 
-    def __init__(self, rawData : int):
+    def __init__(self, rawData):
         #self.address = 0
         self.data    = []
 
@@ -15,6 +17,8 @@ class DataBlock:
         self.address = addressHex1 * 256 + addressHex2
 
         numberOfData = int.from_bytes(rawData[2:3], byteorder=sys.byteorder)
+
+        print(numberOfData)
 
         dataOffset   = 3 + (2 * numberOfData)
 
@@ -30,23 +34,23 @@ class DataBlock:
 
             itemSize  = int(dataBin[0:14],  2)
 
-            self.isDivided = bool(int(dataBin[14:18], 2))
+            itemFlags = dataBin[14:18]
 
-            print(self.isDivided)
+            data = Data()
 
-            print("ItemSize: {0}".format(itemSize))
+            data.InitFromRaw(rawData[dataOffset + currentOffset : dataOffset + currentOffset + itemSize], itemFlags)
 
-            jsonFile  = rawData[dataOffset + currentOffset : dataOffset + currentOffset + itemSize]
-
-            print(jsonFile)
-
-            self.data.append(jsonFile)
+            self.data.append(data)
 
             currentOffset += itemSize
 
         pass
 
-    def ToBytes(self):
+    def GetFreeSpaceSize(self) -> int:
+
+        return self.DATABLOCK_MAX_SIZE - len(self.ToBytes(False))
+
+    def ToBytes(self, fill : bool = True):
 
         blockAddress = bytes([self.address // 256]) + bytes([self.address %  256])
 
@@ -58,30 +62,40 @@ class DataBlock:
 
         for i in range(0, len(self.data)):
 
-            itemSize  = len(self.data[i])
+            itemSize  = len(self.data[i].ToBytes())
 
             binItemSize  = bin(itemSize)[0:2] + bin(itemSize)[2:].zfill(12)
 
-            print(binItemSize)
+            isFragBin      = bin(self.data[i].isFragmented)[2:]
+            isFirstFragBin = bin(self.data[i].isFirst)[2:]
 
-            isDivided = False #temp
+            flags = (isFragBin + isFirstFragBin).zfill(4)
 
-            isItemBin = bin(isDivided)[2:].zfill(4)
-
-            hexTableEntry = int('0b' + binItemSize[10:14] + isItemBin, 2).to_bytes(1, byteorder=sys.byteorder) + \
+            hexTableEntry = int('0b' + binItemSize[10:14] + flags, 2).to_bytes(1, byteorder=sys.byteorder) + \
                             int(binItemSize[0:10], 2).to_bytes(1, byteorder=sys.byteorder)
-
-            print(hexTableEntry)
 
             hexTable += hexTableEntry
 
-            hexData  += self.data[i]
+            hexData  += self.data[i].ToBytes()
 
         totaldata = blockAddress + numberOfData + hexTable + hexData
 
         byteChunk = ""
 
-        for i in range(len(totaldata), self.DATABLOCK_MAX_SIZE+1):
-            byteChunk += "x"
+        if fill:
+            for i in range(len(totaldata), self.DATABLOCK_MAX_SIZE+1):
+                byteChunk += "x"
 
-        return totaldata + byteChunk.encode('utf-8')[1:]
+            return totaldata + byteChunk.encode('utf-8')[1:]
+
+        return totaldata
+
+    def DebugInfo(self):
+
+        print("Bytes: ")
+        print(self.ToBytes())
+        print("stored values: Data and Address ")
+        for data in self.data:
+            data.DebugInfo()
+        print(self.address)
+

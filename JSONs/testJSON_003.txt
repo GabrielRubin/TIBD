@@ -1,5 +1,5 @@
 {
-        "name":"Product",
+        "name":"SILVIO",
         "properties":
         {
                 "id":

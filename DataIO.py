@@ -26,10 +26,10 @@ def LoadDataBlock(dataBlockAddress: int, debug = False) -> int:
             index2 = int.from_bytes(data[1:2], byteorder=sys.byteorder)
             index = index1 * 256 + index2
 
-            print("Datablock address = {0} :: Desired address = {1}".format(index, dataBlockAddress))
-            print("Datablock size = {0}".format(len(data)))
-            print("Datablock contents:")
-            print(data)
+            #print("Datablock address = {0} :: Desired address = {1}".format(index, dataBlockAddress))
+            #print("Datablock size = {0}".format(len(data)))
+            #print("Datablock contents:")
+            #print(data)
 
     return data
 
@@ -40,7 +40,7 @@ def LoadDataBlock(dataBlockAddress: int, debug = False) -> int:
 
 def WriteToDataFile(data, dataBlockAddress):
 
-    print(data)
+    #print(data)
 
     with open("dataFile", "r+b") as f:
 

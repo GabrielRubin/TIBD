@@ -3,7 +3,7 @@ __author__ = 'Gabriel'
 import sys
 import json
 from tkinter.filedialog import askopenfilename
-from Buffer import WriteOnDataBlock
+import Buffer
 
 def LoadAndWriteJSON(targetDataBlockAddress: int) -> None:
 
@@ -15,7 +15,7 @@ def LoadAndWriteJSON(targetDataBlockAddress: int) -> None:
 
             dataRaw = f.read()
 
-            WriteOnDataBlock(targetDataBlockAddress, dataRaw)
+            Buffer.WriteOnDataBlock(targetDataBlockAddress, dataRaw)
 
             #dataStr = dataRaw.decode()
             #print(dataStr)

@@ -2,107 +2,112 @@ __author__ = 'Gabriel'
 import sys
 from tkinter import *
 from tkinter import filedialog
-import Main
+from Control import Control
 
-def OpenFileDialog():
+DATABLOCK_MAX_SIZE      = 4096
+DATAFILE_MAX_DATABLOCKS = 65536
 
-    root = Tk()
+class UI:
 
-    value = filedialog.askopenfilenames(parent = root, title='Select JSON files')
+    def __init__(self):
 
-    root.destroy()
+        self.UIOptions = { 1 : self.AddFileToDatafile, 2 : self.CheckDataBlockContent, "delete" : self.DeleteDatafile, "s" : self.SaveAllChanges, "q" : self.Quit }
 
-    return value
+        self.control = Control()
 
-def AddFileToDatafile() -> None:
+    def AddFileToDatafile(self) -> None:
 
-    print("select the datablock")
+        #print("select the datablock")
 
-    value = GetUserInputNumber(0, Main.DataIO.DATAFILE_MAX_DATABLOCKS)
+        #value = self.GetUserInputNumber(0, DATAFILE_MAX_DATABLOCKS)
 
-    filenames = OpenFileDialog()
+        root = Tk()
 
-    Main.LoadAndWriteJSON(filenames, value)
+        filenames = filedialog.askopenfilenames(parent = root, title='Select JSON files')
 
-    pass
+        print(filenames)
 
-def CheckDataBlockContent () -> None:
+        root.destroy()
 
-    value = GetUserInputNumber(0, Main.DataIO.DATAFILE_MAX_DATABLOCKS)
+        self.control.LoadAndWriteJSON(filenames, filenames)
 
-    print("\n*** BLOCK INFO ***\n")
+    def CheckDataBlockContent (self) -> None:
 
-    Main.PrintDatablockInfo(value)
+        value = self.GetUserInputNumber(0, DATAFILE_MAX_DATABLOCKS)
 
-    print("\n******************")
+        print("\n*** BLOCK INFO ***\n")
 
-    pass
+        self.control.PrintDataBlock(value)
 
-def DeleteDatafile() -> None:
+        print("\n******************")
 
-    Main.EraseDatafile()
+    def SaveAllChanges(self) -> None:
 
-    pass
+        print("Saving data...")
 
-def Quit() -> None:
+        self.control.SaveBeforeQuit()
 
-    sys.exit()
-    pass
+        print("DONE.")
 
-UIOptions = { 1 : AddFileToDatafile, 2 : CheckDataBlockContent, "delete" : DeleteDatafile, "q" : Quit }
+    def DeleteDatafile(self) -> None:
 
-def PrintUserOptions() -> None:
+        self.control.EraseDatafile()
 
-    print("Options:")
+    def Quit(self) -> None:
 
-    for option in UIOptions.items():
+        self.SaveAllChanges()
+
+        print("Bye bye!")
+
+        sys.exit()
+
+    def PrintUserOptions(self) -> None:
+
+        print("Options:")
+
+        for option in self.UIOptions.items():
+            print("---")
+            print(str(option[0]) + " - " + option[1].__name__)
+
         print("---")
-        print(str(option[0]) + " - " + option[1].__name__)
 
-    print("---")
-    pass
+    def GetUserInputNumber(self, fromValue : int, toValue : int) -> int:
 
-def GetUserInputNumber(fromValue : int, toValue : int) -> int:
-
-    while True:
-        try:
-            value = int(input("Enter a value from {0} to {1} ....".format(fromValue, toValue)))
-            if value < fromValue or value > toValue:
-                print("Invalid value! This value is not valid!")
-            else:
-                return value
-        except ValueError:
-            print("Invalid value! This is not a number!")
-            continue
-
-    return None
-
-def GetUserInput() -> None:
-
-    while True:
-
-        print("---------------------------------")
-
-        PrintUserOptions()
-
-        user_input = input("Select operation... ")
-
-        if user_input is not None:
-
+        while True:
             try:
+                value = int(input("Enter a value from {0} to {1} ....".format(fromValue, toValue)))
+                if value < fromValue or value > toValue:
+                    print("Invalid value! This value is not valid!")
+                else:
+                    return value
+            except ValueError:
+                print("Invalid value! This is not a number!")
+                continue
+
+        return None
+
+    def GetUserInput(self) -> None:
+
+        while True:
+
+            print("---------------------------------")
+
+            self.PrintUserOptions()
+
+            user_input = input("Select operation... ")
+
+            if user_input is not None:
+
                 try:
-                    value = int(user_input)
-                except ValueError:
-                    value = user_input
+                    try:
+                        value = int(user_input)
+                    except ValueError:
+                        value = user_input
 
-                UIOptions[value]()
+                    self.UIOptions[value]()
 
-            except KeyError:
+                except KeyError:
 
-                print("***********")
-                print("Invalid Option!!! Please select one of the following options")
-                print("***********")
-
-    pass
-
-GetUserInput()
+                    print("***********")
+                    print("Invalid Option!!! Please select one of the following options")
+                    print("***********")

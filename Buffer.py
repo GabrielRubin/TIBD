@@ -1,55 +1,74 @@
 __author__ = 'Gabriel'
 
-import DataIO as IO
+import DataIO
 from DataBlock import DataBlock
 
-BUFFER_MAX_SIZE = 256
+class Buffer:
 
-buffer     = []
-bufferSize = 0
+    def __init__(self):
 
-def LoadDataToBuffer(dataBlockAddress: int) -> None:
+        self.BUFFER_MAX_SIZE = 256
 
-    data = IO.LoadDataBlock(dataBlockAddress, True)
+        self.dataBlockArray = []
 
-    dataBlock = DataBlock(data)
+    def SelectFrameToDiscard(self) -> int:
 
-    if bufferSize >= BUFFER_MAX_SIZE:
-        DiscardFrame()
+        #TODO: CLOCK discard
 
-    buffer.append(dataBlock)
+        selected = 0
 
-    print(dataBlock)
+        dataBlock = self.GetDataBlock(selected)
 
-    return dataBlock
+        DataIO.WriteToDataFile(dataBlock.ToBytes(), dataBlock.address)
 
-def GetDataBlockFromBuffer(dataBlockAddress: int) -> DataBlock:
+        pass
 
-    for i in range(0, len(buffer)):
+    def LoadDataToBuffer(self, dataBlockAddress: int) -> DataBlock:
 
-        if buffer[i].address == dataBlockAddress:
+        data = DataIO.LoadDataBlock(dataBlockAddress, True)
 
-            return buffer[i]
+        dataBlock = DataBlock(data)
 
-    #Datablock not found
-    return LoadDataToBuffer(dataBlockAddress)
+        if len(self.dataBlockArray) >= self.BUFFER_MAX_SIZE:
 
-def WriteOnDataBlock(dataBlockAddress: int, data) -> None:
+            framePos = self.SelectFrameToDiscard()
 
-    dataBlock = GetDataBlockFromBuffer(dataBlockAddress)
+            self.dataBlockArray[framePos] = dataBlock
 
-    dataBlock.data.append(data)
+        else:
+            self.dataBlockArray.append(dataBlock)
 
-    SaveDataBlockToDataFile(dataBlock)
+        return dataBlock
 
-    pass
+    def GetDataBlock(self, dataBlockAddress: int) -> DataBlock:
 
-def SaveDataBlockToDataFile(dataBlock: DataBlock) -> None:
+        for i in range(0, len(self.dataBlockArray)):
 
-    IO.WriteToDataFile(dataBlock.ToBytes(), dataBlock.address)
+            if self.dataBlockArray[i].address == dataBlockAddress:
 
-def DiscardFrame() -> None:
+                return self.dataBlockArray[i]
 
-    pass
+        return self.LoadDataToBuffer(dataBlockAddress)
 
-#LoadDataToBuffer(0)
+    def WriteOnDataBlock(self, dataBlockAddress: int, data) -> None:
+
+        dataBlock = self.GetDataBlock(dataBlockAddress)
+
+        dataBlock.data.append(data)
+
+        pass
+
+    def SaveAllToDataFile(self) -> None:
+
+        for dataBlock in self.dataBlockArray:
+
+            DataIO.WriteToDataFile(dataBlock.ToBytes(), dataBlock.address)
+
+    def PrintDatablock(self, datablockAddress : int) -> None:
+
+        data = self.GetDataBlock(datablockAddress)
+        data.DebugInfo()
+
+    def EraseDatafile(self):
+
+        DataIO.EraseAllData()
